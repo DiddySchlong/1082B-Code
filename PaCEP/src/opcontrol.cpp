@@ -36,19 +36,22 @@ void intake(void*){
   }
 }
 
+
 void trayControl(void*){
-  Task trayT(tray_pid);
+struct tray *trayz,pid1;
+trayz= &pid1;
+trayPID(trayz, 0, 0 ,0);
+float error =0;
   bool toggle = false;
   while(true){
+
     if(master.get_digital(DIGITAL_Y)){
       toggle = !toggle;
       if(toggle){
-        for(int i = 0; i < 1700; i = i + 3){
-          set_tray_pid(i);
-          delay(5);
-        }
+        tray.move(PIDUpdate(trayz,error,5));
+        delay(5);
       } else {
-        set_tray_pid(0);
+        tray.move(1000);
       }
       while (master.get_digital(DIGITAL_Y)){
         delay(1);
@@ -58,41 +61,40 @@ void trayControl(void*){
   }
 }
 
-void arm_control(void*) {
-	Task arm_t(arm_pid);
-	bool was_pid;
-	while (true) {
-		if (master.get_digital(DIGITAL_B)) {
-			was_pid = true;
-			arm_t.resume();
-			set_arm_pid(2300);
-		} else if (master.get_digital(DIGITAL_DOWN)) {
-			was_pid = true;
-			arm_t.resume();
-			set_arm_pid(1800);
-		} else {
-			if (master.get_digital(DIGITAL_R1)||master.get_digital(DIGITAL_R2)) {
-				was_pid = false;
-				set_arm((master.get_digital(DIGITAL_R1)-master.get_digital(DIGITAL_R2))*127);
-			} else {
-				if (!was_pid) {
-					set_arm(0);
-				}
-			}
-		}
-
-		if (!was_pid) {
-			arm_t.suspend();
-		}
-
-		pros::delay(20);
-	}
-}
-
+// void arm_control(void*) {
+// 	Task arm_t(arm_pid);
+// 	bool was_pid;
+// 	while (true) {
+// 		if (master.get_digital(DIGITAL_B)) {
+// 			was_pid = true;
+// 			arm_t.resume();
+// 			set_arm_pid(2300);
+// 		} else if (master.get_digital(DIGITAL_DOWN)) {
+// 			was_pid = true;
+// 			arm_t.resume();
+// 			set_arm_pid(1800);
+// 		} else {
+// 			if (master.get_digital(DIGITAL_R1)||master.get_digital(DIGITAL_R2)) {
+// 				was_pid = false;
+// 				set_arm((master.get_digital(DIGITAL_R1)-master.get_digital(DIGITAL_R2))*127);
+// 			} else {
+// 				if (!was_pid) {
+// 					set_arm(0);
+// 				}
+// 			}
+// 		}
+//
+// 		if (!was_pid) {
+// 			arm_t.suspend();
+// 		}
+//
+// 		pros::delay(20);
+// 	}
+// }
 
 void opcontrol(){
   Task trayControlT(trayControl);
-  Task armControlT(arm_control);
+//  Task armControlT(arm_control);
   Task intakeT(intake);
 	while (true){
 		int linear = master.get_analog(ANALOG_RIGHT_Y);
